@@ -4,3 +4,9 @@ c:\users\vextrell\documents\visual studio 2013\Projects\ServerApplication\Server
 c:\users\vextrell\documents\visual studio 2013\Projects\ServerApplication\ServerApplication\bin\Debug\ServerApplication.pdb
 c:\users\vextrell\documents\visual studio 2013\Projects\ServerApplication\ServerApplication\obj\Debug\ServerApplication.exe
 c:\users\vextrell\documents\visual studio 2013\Projects\ServerApplication\ServerApplication\obj\Debug\ServerApplication.pdb
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\ServerApplication.exe.config
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.exe
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.pdb
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.csprojResolveAssemblyReference.cache
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\ServerApplication.exe
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\ServerApplication.pdb

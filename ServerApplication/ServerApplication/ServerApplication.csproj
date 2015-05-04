@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defines.cs" />
     <Compile Include="ConsultationControl.cs" />
     <Compile Include="DataBaseMessageComposer.cs" />
     <Compile Include="MessageControl.cs" />
