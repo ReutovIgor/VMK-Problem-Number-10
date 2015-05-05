@@ -1,21 +1,28 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.Http;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ServerApplication
 {
+
+    #region MesageControl
     class MessageControl : HttpServer
     {
         private UserControl userControl;
         private ConsultationControl consultationControl;
+        private MessageChecker messageChecker;
 
         public MessageControl(int port) : base(port)
         {
             userControl = new UserControl();
             consultationControl = new ConsultationControl();
+            messageChecker = new MessageChecker();
         }
 
         public override void handleGETRequest(HttpProcessor p)
@@ -29,6 +36,90 @@ namespace ServerApplication
         }
     }
 
+    class MessageChecker
+    {
+        Dictionary<string, Dictionary<string, string>[]> messageTypes;
+        public MessageChecker()
+        {
+            DateTime date = DateTime.Now;
+            Console.WriteLine(date.ToString() + "Defines:: Initializing MessageChecker");
+            messageTypes = readFile();
+        }
+
+        private Dictionary<string, Dictionary<string, string>[]> readFile()
+        {
+            Dictionary<string, Dictionary<string, string>[]> result = new Dictionary<string, Dictionary<string, string>[]>();
+            List<string> list = new List<string>();
+            using (StreamReader reader = new StreamReader("MessageTypes.txt"))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    list.Add(line); // Add to list.
+                    Console.WriteLine(line); // Write to console.
+                }
+            }
+
+            string[] stringSpliter = { "," };
+
+            foreach(string el in list)
+            {
+                string message = el.Substring(0, el.IndexOf(':'));
+                string rest = el.Substring(el.IndexOf(':') + 2);
+
+                string[] strDescription = rest.Split(stringSpliter, StringSplitOptions.None);
+                Dictionary<string, string>[] dictionaryDescription = new Dictionary<string, string>[2]{
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>()
+                };
+                dictionaryDescription[0].Add("Authorized", strDescription[0].Substring(strDescription[0].IndexOf(':') + 2));
+                dictionaryDescription[1].Add("Handler", strDescription[1].Substring(strDescription[1].IndexOf(':') + 1));
+                result.Add(message, dictionaryDescription);
+            }
+            return result;
+        }
+
+        public Dictionary<string, string>[] checkReceivedMessage(string messageType)
+        {
+            Dictionary<string, string>[] result;
+            if (messageTypes.ContainsKey(messageType))
+                result = messageTypes[messageType];
+            else
+                result = null;
+            return result;
+        }
+    }
+    #endregion
+
+    #region HttpRequestSender
+    class HttpRequestSender
+    {
+        string url;
+        HttpClient client;
+
+        public HttpRequestSender(string url) 
+        {
+            Console.WriteLine("Client:: Initializing");
+            this.url = url;
+            client = new HttpClient();
+        }
+
+        public string sendPostRequest(Dictionary<string,string> data)
+        {
+            Console.WriteLine("Client:: Sending data to url: " + this.url);
+            var content = new FormUrlEncodedContent(data);
+
+            //var response = 
+            client.PostAsync(this.url, content);
+
+            //var responseString = response.Content.ReadAsStringAsync();
+            
+            return "";
+        }
+    }
+    #endregion
+
+    #region HttpListener
     public abstract class HttpServer
     {
         private int port;
@@ -43,8 +134,16 @@ namespace ServerApplication
 
         public void Listen()
         {
+            Console.WriteLine("Server:: Initialized");
             tcpListener = new TcpListener(IPAddress.Any, port);
             tcpListener.Start();
+            Console.WriteLine("Server:: Begin Listening");
+            HttpRequestSender httpRequestSender;
+            httpRequestSender = new HttpRequestSender("http://127.0.0.1:8080");
+            Console.WriteLine("Server:: Creating a stub POST request");
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            data.Add("key1", "hello first sending");
+            httpRequestSender.sendPostRequest(data);
             while (isActive)
             {
                 TcpClient s = tcpListener.AcceptTcpClient();
@@ -261,6 +360,7 @@ namespace ServerApplication
             outputStream.WriteLine(""); // this terminates the HTTP headers.
         }
     }
+    #endregion
 
     public class ServerMain
     {
@@ -269,9 +369,15 @@ namespace ServerApplication
         {
             HttpServer httpServer;
             httpServer = new MessageControl(8080);
+            //HttpRequestSender httpRequestSender;
+            //httpRequestSender = new HttpRequestSender("http://127.0.0.1:8080");
 
             Thread thread = new Thread(new ThreadStart(httpServer.Listen));
             thread.Start();
+
+            Application.EnableVisualStyles();
+            Form CommandLog = new ServerCommandLog();
+            Application.Run(CommandLog);
         }
     }
 }

@@ -9,10 +9,10 @@ namespace Defines
     //Defines.ConsultationData data = new Defines.ConsultationData();
     public struct ConsultationData
     {
-        DateTime date_time;
-        String department;
-        int patientId;
-        int doctorId;
+        public DateTime date_time;
+        public String department;
+        public int patientId;
+        public int doctorId;
 
         public ConsultationData(DateTime date_time, String department, int patientId, int doctorId)
         {

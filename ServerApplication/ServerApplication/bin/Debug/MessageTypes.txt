@@ -1,0 +1,14 @@
+getDepartmentList: Authorized: [Patient], Handler: ConsultationControl
+getDoctorList: Authorized: [Patient], Handler: ConsultationControl
+reserveTime: Authorized: [Patient], Handler: ConsultationControl
+createConsultation: Authorized: [Patient], Handler: ConsultationControl
+closeConsultation: Authorized: [Patient, Doctor], Handler: ConsultationControl
+CancelConsultation: Authorized: [Patient, Doctor], Handler: ConsultationControl
+registerUser: Authorized: [], Handler: UserControl
+approveUser: Authorized: [Manager], Handler: UserControl
+addRights: Authorized: [Manager], Handler: UserControl
+getSchedule: Authorized: [Doctor, Manager], Handler: UserControl
+changeSchedule: Authorized: [Manager], Handler: UserControl
+vacationPlanning: Authorized: [Doctor], Handler: UserControl
+approvePlan: Authorized: [Manager], Handler: UserControl
+deleteUser: Authorized: [Manager], Handler: UserControl
