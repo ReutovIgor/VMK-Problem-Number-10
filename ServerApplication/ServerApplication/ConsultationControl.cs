@@ -12,5 +12,10 @@ namespace ServerApplication
         {
 
         }
+        //это стаб, пустышка, вместо null он должен возвращать массив данных, или пустой массив.
+        public string[] GetDepartmentList(ref Defines.Error error)
+        {
+            return null;
+        }
     }
 }

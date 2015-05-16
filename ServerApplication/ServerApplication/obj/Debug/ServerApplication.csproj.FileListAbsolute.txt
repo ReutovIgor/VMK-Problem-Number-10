@@ -10,3 +10,5 @@ D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\Se
 D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.csprojResolveAssemblyReference.cache
 D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\ServerApplication.exe
 D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\ServerApplication.pdb
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.ServerCommandLog.resources
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.csproj.GenerateResource.Cache
