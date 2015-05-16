@@ -1,9 +1,13 @@
-getDepartmentList: Authorized: [Patient], Handler: ConsultationControl
-getDoctorList: Authorized: [Patient], Handler: ConsultationControl
-reserveTime: Authorized: [Patient], Handler: ConsultationControl
-createConsultation: Authorized: [Patient], Handler: ConsultationControl
-closeConsultation: Authorized: [Patient, Doctor], Handler: ConsultationControl
-CancelConsultation: Authorized: [Patient, Doctor], Handler: ConsultationControl
+get_departments: Authorized: [Patient], Handler: ConsultationControl
+get_doctorList: Authorized: [Patient], Handler: ConsultationControl
+reserve_time: Authorized: [Patient], Handler: ConsultationControl
+create_consultation: Authorized: [Patient], Handler: ConsultationControl
+add_note: Authorized: [Doctor], Handler: ConsultationControl
+close_consultation: Authorized: [Patient, Doctor], Handler: ConsultationControl
+cancel_consultation: Authorized: [Patient, Doctor], Handler: ConsultationControl
+send_message: Authorized: [Patient, Doctor], Handler: ConsultationControl
+get_consultations: Authorized: [], Handler: ConsultationControl
+get_messages: Authorized: [Patient, Doctor], Handler: ConsultationControl
 registerUser: Authorized: [], Handler: UserControl
 approveUser: Authorized: [Manager], Handler: UserControl
 addRights: Authorized: [Manager], Handler: UserControl

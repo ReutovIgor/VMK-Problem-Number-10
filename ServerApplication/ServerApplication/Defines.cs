@@ -6,20 +6,78 @@ using System.Threading.Tasks;
 
 namespace Defines
 {
-    //Defines.ConsultationData data = new Defines.ConsultationData();
-    public struct ConsultationData
+    #region Predefined Structures
+    public struct User
+    {
+        public String name;
+        public String surname;
+    }
+    
+    public struct CreateConsultation
     {
         public DateTime date_time;
         public String department;
-        public int patientId;
-        public int doctorId;
+        public String username;
+        public User doctor;
+        public String message;
+    }
 
-        public ConsultationData(DateTime date_time, String department, int patientId, int doctorId)
+    public struct ReserveTime
+    {
+        public DateTime time;
+        public String username;
+    }
+
+    public struct AddNote
+    {
+        public String username;
+        public int ConsultationId;
+    }
+
+    public struct GetConsultations
+    {
+        public String usernmae;
+        public int status;
+    }
+
+    public struct FinishConsultation
+    {
+        public int consultationId;
+        public String username;
+    }
+
+    public struct SendMessage
+    {
+        public String from;
+        public User to;
+        public String message;
+    }
+    #endregion
+
+    #region Errors
+    public struct Error
+    {
+        public int id;
+        public String text;
+
+        public void DB_error()
         {
-            this.date_time = date_time;
-            this.department = department;
-            this.patientId = patientId;
-            this.doctorId = doctorId;
+            this.id = 100;
+            this.text = "DataBase Error";
+        }
+
+        public void BadParameter_error()
+        {
+            this.id = 101;
+            this.text = "Bad Parameters passed";
+        }
+
+        public void Server_error()
+        {
+            this.id = 102;
+            this.text = "Server Error";
         }
     }
+    #endregion
+
 }

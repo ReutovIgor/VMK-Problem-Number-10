@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Net.Http;
 using System.Threading;
 using System.Windows.Forms;
+using System.Web.Script.Serialization;
 
 namespace ServerApplication
 {
@@ -17,12 +18,14 @@ namespace ServerApplication
         private UserControl userControl;
         private ConsultationControl consultationControl;
         private MessageChecker messageChecker;
+        private HttpRequestSender requestSender;
 
         public MessageControl(int port) : base(port)
         {
             userControl = new UserControl();
             consultationControl = new ConsultationControl();
             messageChecker = new MessageChecker();
+            requestSender = new HttpRequestSender("http://127.0.0.1:8080");
         }
 
         public override void handleGETRequest(HttpProcessor p)
@@ -33,7 +36,67 @@ namespace ServerApplication
         public override void handlePOSTRequest(HttpProcessor p, StreamReader inputData)
         {
             Console.WriteLine("received POST request");
+
+            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            Dictionary<string, dynamic> jsonObject = (Dictionary<string, dynamic>) serializer.DeserializeObject(inputData.ReadToEnd());
+            string method = jsonObject["method"];
+            Dictionary<string, string>[] messageHandler = messageChecker.checkReceivedMessage(method);
+
+            if(messageHandler == null)
+            {
+                return;
+            }
+
+            
+
+            switch (messageHandler[1]["Handler"])
+            {
+                case "ConsultationControl":
+                    this.ConsultationHandler(method);                    
+                    break;
+                case "UserControl":
+                    break;
+            }
         }
+
+        private void ConsultationHandler(string method)
+        {
+            Defines.Error error = new Defines.Error();
+            switch (method)
+            {
+                case "get_departments":
+                    string[] list = this.consultationControl.GetDepartmentList(ref error);
+                    break;
+                case "get_doctorList":
+                    break;
+                case "reserve_time":
+                    break;
+                case "create_consultation":
+                    break;
+                case "add_note":
+                    break;
+                case "close_consultation":
+                    break;
+                case "cancel_consultation":
+                    break;
+                case "send_message":
+                    break;
+                case "get_consultations":
+                    break;
+                case "get_messages":
+                    break;
+            }
+        }
+
+        private void composeConsultationResponse(dynamic data, Defines.Error error)
+        {
+            
+        }
+        private void composeUserResponse(dynamic data, Defines.Error error)
+        {
+
+        }
+
     }
 
     class MessageChecker
@@ -138,12 +201,6 @@ namespace ServerApplication
             tcpListener = new TcpListener(IPAddress.Any, port);
             tcpListener.Start();
             Console.WriteLine("Server:: Begin Listening");
-            HttpRequestSender httpRequestSender;
-            httpRequestSender = new HttpRequestSender("http://127.0.0.1:8080");
-            Console.WriteLine("Server:: Creating a stub POST request");
-            Dictionary<string, string> data = new Dictionary<string, string>();
-            data.Add("key1", "hello first sending");
-            httpRequestSender.sendPostRequest(data);
             while (isActive)
             {
                 TcpClient s = tcpListener.AcceptTcpClient();
@@ -369,12 +426,11 @@ namespace ServerApplication
         {
             HttpServer httpServer;
             httpServer = new MessageControl(8080);
-            //HttpRequestSender httpRequestSender;
-            //httpRequestSender = new HttpRequestSender("http://127.0.0.1:8080");
 
             Thread thread = new Thread(new ThreadStart(httpServer.Listen));
             thread.Start();
 
+            //test application
             Application.EnableVisualStyles();
             Form CommandLog = new ServerCommandLog();
             Application.Run(CommandLog);
