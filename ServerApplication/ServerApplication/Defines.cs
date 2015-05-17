@@ -36,7 +36,7 @@ namespace Defines
 
     public struct GetConsultations
     {
-        public String usernmae;
+        public String username;
         public int status;
     }
 
@@ -64,6 +64,11 @@ namespace Defines
         public int id;
         public String text;
 
+        public void Success()
+        {
+            this.id = 0;
+            this.text = "Success";
+        }
         public void DB_error()
         {
             this.id = 100;
