@@ -8,9 +8,48 @@ namespace ServerApplication
 {
     class UserControl
     {
-        public UserControl()
+        public UserControl(){}
+
+        public void RegisterUser()
         {
 
         }
+
+        public void ApproveUser()
+        {
+
+        }
+
+        public void AddRights()
+        {
+
+        }
+
+        public void DeleteUser()
+        {
+
+        }
+
+        public void GetSchedule()
+        {
+
+        }
+
+        public void ChangeSchedule()
+        {
+
+        }
+
+        public void VacationPlanning()
+        {
+
+        }
+
+        public void ApprovePlan()
+        {
+
+        }
+
+
     }
 }

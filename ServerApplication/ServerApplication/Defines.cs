@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Defines
 {
-    #region Predefined Structures
+    #region Predefined ConsultationControl Structures
     public struct User
     {
         public String name;
@@ -52,6 +52,10 @@ namespace Defines
         public User to;
         public String message;
     }
+    #endregion
+
+    #region Predefined UserControl Structures
+
     #endregion
 
     #region Errors

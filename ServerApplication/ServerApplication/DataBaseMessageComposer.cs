@@ -2,11 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Data;
 
 namespace ServerApplication
 {
-    class DataBaseMessageComposer
+    static class DataBaseMessageComposer
     {
+        private static DBWorker dbWorker;
+
+        static DataBaseMessageComposer()
+        {
+            dbWorker = new DBWorker();
+        }
+
+        public static DataSet SendRequest(string query)
+        {
+            return dbWorker.SendQuery(query);
+        }
     }
 }

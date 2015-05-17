@@ -19,6 +19,7 @@ namespace ServerApplication
         private ConsultationControl consultationControl;
         private MessageChecker messageChecker;
         private HttpRequestSender requestSender;
+        //private DataBaseMessageComposer DBComposer;
 
         public MessageControl(int port) : base(port)
         {
@@ -26,6 +27,7 @@ namespace ServerApplication
             consultationControl = new ConsultationControl();
             messageChecker = new MessageChecker();
             requestSender = new HttpRequestSender("http://127.0.0.1:8080");
+            //DBComposer = new DataBaseMessageComposer();
         }
 
         public override void handleGETRequest(HttpProcessor p)
@@ -45,9 +47,7 @@ namespace ServerApplication
             if(messageHandler == null)
             {
                 return;
-            }
-
-            
+            }            
 
             switch (messageHandler[1]["Handler"])
             {
@@ -55,6 +55,7 @@ namespace ServerApplication
                     this.ConsultationHandler(method);                    
                     break;
                 case "UserControl":
+                    this.UserHandler(method);
                     break;
             }
         }
@@ -86,6 +87,41 @@ namespace ServerApplication
                 case "get_messages":
                     break;
             }
+        }
+
+        private void UserHandler(string method)
+        {
+            Defines.Error error = new Defines.Error();
+            switch (method)
+            {
+                case "get_departments":
+                    string[] list = this.consultationControl.GetDepartmentList(ref error);
+                    break;
+                case "get_doctorList":
+                    //string[] list = 
+                    break;
+                case "reserve_time":
+                    break;
+                case "create_consultation":
+                    break;
+                case "add_note":
+                    break;
+                case "close_consultation":
+                    break;
+                case "cancel_consultation":
+                    break;
+                case "send_message":
+                    break;
+                case "get_consultations":
+                    break;
+                case "get_messages":
+                    break;
+            }
+        }
+
+        private void ComposeResponse()
+        {
+
         }
 
         private void composeConsultationResponse(dynamic data, Defines.Error error)
