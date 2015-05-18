@@ -39,7 +39,7 @@ namespace ServerApplication
                 return DepList.ToArray();
             }
         }
-        private bool Contain(string[] array, dynamic value) 
+        private bool Contain(string[] array, dynamic value)
         {
             int pos = Array.IndexOf(array, value);
             if (pos > -1)
@@ -102,8 +102,8 @@ namespace ServerApplication
             DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
 
             // parsing request output
-            DataRow row = DBoutput.Tables[0].Rows[0];            
-            if ( row["status"] != "free" )
+            DataRow row = DBoutput.Tables[0].Rows[0];
+            if (row["status"] != "free")
             {
                 error.BadParameter_error();
                 return -1;
@@ -114,6 +114,245 @@ namespace ServerApplication
             newTime.Init(inputData);
             reservedTimeList.Add(newTime);
             return 0;
+        }
+        private bool FreeTime(Dictionary<string, dynamic> inputData)
+        {
+            bool Success = inputData.ContainsKey("time");
+            if (!Success)
+                return false;
+
+            dynamic timeForDelete = new DateTime();
+            Success = inputData.TryGetValue("time", timeForDelete);
+
+            if (!Success)
+                return false;
+
+            foreach (Defines.ReservedTimeItem val in reservedTimeList)
+            {
+                if (val.time.Equals(timeForDelete))
+                {
+                    int indexForDelete = reservedTimeList.IndexOf(val);
+                    reservedTimeList.Remove(val);
+                }
+            }
+
+            return true;
+        }
+        private bool CheckRequest(Dictionary<string, dynamic> inputData, string request)
+        {
+            DataSet DBoutput = new DataSet();
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            if (DBoutput.Tables[0].Rows.Count != 0)
+            {
+                return true;
+            }
+            return false;
+        }
+        public int CreateConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            if (CheckRequest(inputData, "check_consultation_existing"))
+            {
+                // cons already exist
+                error.BadParameter_error();
+                return -1;
+            }
+
+            if (!CheckRequest(inputData, "check_permissions_create"))
+            {
+                // you have no permissions
+                error.BadParameter_error();
+                return -1;
+            }
+
+            // compiling request input
+            DataSet DBoutput = new DataSet();
+            string request = "create_consultation";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            if (DBoutput.Tables[0].Rows.Count == 0)
+            {
+                error.DB_error();
+                return -1;
+            }
+            else
+            {
+                if (FreeTime(inputData))
+                {
+                    error.Server_error();
+                    return -1;
+                }
+                error.Success();
+                return 0;
+            }
+
+        }
+        public List<Defines.Consultation> GetConsultations(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            // compiling request input
+            DataSet DBoutput = new DataSet();
+            string request = "get_consultations";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            List<Defines.Consultation> ConsList = new List<Defines.Consultation>();
+            DataTable table = DBoutput.Tables[0];
+            foreach (DataRow row in table.Rows)
+            {
+                Defines.Consultation current = new Defines.Consultation();
+                current.Init(row);
+                ConsList.Add(current);
+            }
+
+            if (!ConsList.Any())
+            {
+                error.DB_error();
+                return null;
+            }
+            else
+            {
+                error.Success();
+                return ConsList;
+            }
+        }
+        public int AddNote(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            if (!CheckConsultationExisting(inputData))
+            {
+                error.BadParameter_error();
+                return -1;
+            }
+
+            // compiling request input
+            DataSet DBoutput = new DataSet();
+            string request = "add_note";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            if (DBoutput.Tables[0].Rows.Count == 0)
+            {
+                error.DB_error();
+                return -1;
+            }
+            else
+            {
+                error.Success();
+                return 0;
+            }
+        }
+        public int CloseConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            if (!CheckRequest(inputData, "check_consultation_existing"))
+            {
+                // cons does not exist
+                error.BadParameter_error();
+                return -1;
+            }
+
+            if (!CheckRequest(inputData, "check_permissions_close"))
+            {
+                // you have no permissions
+                error.BadParameter_error();
+                return -1;
+            }
+
+            // compiling request input
+            DataSet DBoutput = new DataSet();
+            string request = "close_consultation";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            if (DBoutput.Tables[0].Rows.Count == 0)
+            {
+                error.DB_error();
+                return -1;
+            }
+            else
+            {
+                error.Success();
+                return 0;
+            }
+        }
+        public int CancelConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            if (!CheckRequest(inputData, "check_consultation_existing"))
+            {
+                // cons does not exist
+                error.BadParameter_error();
+                return -1;
+            }
+
+            if (!CheckRequest(inputData, "check_permissions_cancel"))
+            {
+                // you have no permissions
+                error.BadParameter_error();
+                return -1;
+            }
+
+            // compiling request input
+            DataSet DBoutput = new DataSet();
+            string request = "cancel_consultation";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            if (DBoutput.Tables[0].Rows.Count == 0)
+            {
+                error.DB_error();
+                return -1;
+            }
+            else
+            {
+                error.Success();
+                return 0;
+            }
+        }
+        public int SendMessage(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            DataSet DBoutput = new DataSet();
+            string request = "send_message";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            if (DBoutput.Tables[0].Rows.Count == 0)
+            {
+                error.DB_error();
+                return -1;
+            }
+            else
+            {
+                error.Success();
+                return 0;
+            }
+        }
+        public List<Defines.Message> GetMessages(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            DataSet DBoutput = new DataSet();
+            string request = "get_messages";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+
+            // parsing request output
+            List<Defines.Message> messagesList = new List<Defines.Message>();
+            DataTable table = DBoutput.Tables[0];
+            foreach (DataRow row in table.Rows)
+            {
+                Defines.Message current = new Defines.Message(
+                                                               (string)row["from"],
+                                                               (Defines.User)row["to"],
+                                                               (string)row["message"]
+                                                             );
+                messagesList.Add(current);
+            }
+
+            if (DBoutput.Tables[0].Rows.Count == 0)
+            {
+                error.DB_error();
+                return null;
+            }
+            else
+            {
+                error.Success();
+                return messagesList;
+            }
         }
 
     }

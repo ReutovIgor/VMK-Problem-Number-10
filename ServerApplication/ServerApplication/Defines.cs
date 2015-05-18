@@ -1,25 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Defines
 {
     #region Predefined ConsultationControl Structures
-    public struct CreateConsultation
+    public struct Consultation
     {
         public DateTime date_time;
         public String department;
         public User patient;
         public User doctor;
         public String message;
+        public string status;
+
+        public void Init(DataRow input)
+        {
+            DateTime temp = new DateTime(
+                                        (int)input["year"],
+                                        (int)input["month"],
+                                        (int)input["day"],
+                                        (int)input["hour"],
+                                        (int)input["minute"],
+                                        (int)input["second"]
+                                        );
+                                                        
+            this.department     = input["department"].ToString();
+            this.patient.name   = input["patient"].ToString();
+            this.doctor.name    = input["doctor"].ToString();
+            this.message        = input["message"].ToString();
+            this.status         = input["status"].ToString();
+        }
     }
 
     public struct ReservedTimeItem
     {
-        DateTime time;
-        string username;
+        public DateTime time;
+        public string username;
 
         public void Init(Dictionary<string, dynamic> input)
         {
@@ -103,11 +123,18 @@ namespace Defines
         public String fatherName;
     }
     
-    public struct SendMessage
+    public struct Message
     {
         public String from;
         public User to;
         public String message;
+
+        public Message(string from, User to, string message)
+        {
+            this.from = from;
+            this.to = to;
+            this.message = message;
+        }
     }
     #endregion
 

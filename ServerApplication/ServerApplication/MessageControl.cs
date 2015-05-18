@@ -64,6 +64,8 @@ namespace ServerApplication
         {
             Defines.Error error = new Defines.Error();
             string[] list;
+            List<Defines.Message> messages;
+            List<Defines.Consultation> consList;
             switch (method)
             {
                 case "get_departments":
@@ -76,18 +78,25 @@ namespace ServerApplication
                     this.consultationControl.ReserveTime(methodData, ref error);
                     break;
                 case "create_consultation":
+                    this.consultationControl.CreateConsultation(methodData, ref error);
                     break;
                 case "add_note":
+                    this.consultationControl.AddNote(methodData, ref error);
                     break;
                 case "close_consultation":
+                    this.consultationControl.CloseConsultation(methodData, ref error);
                     break;
                 case "cancel_consultation":
+                    this.consultationControl.CancelConsultation(methodData, ref error);
                     break;
                 case "send_message":
+                    this.consultationControl.SendMessage(methodData, ref error);
                     break;
                 case "get_consultations":
+                    consList = this.consultationControl.GetConsultations(methodData, ref error);
                     break;
                 case "get_messages":
+                    messages = this.consultationControl.GetMessages(methodData, ref error);
                     break;
             }
         }
