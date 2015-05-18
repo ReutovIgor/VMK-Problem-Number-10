@@ -63,14 +63,17 @@ namespace ServerApplication
         private void ConsultationHandler(string method, Dictionary<string, dynamic> methodData)
         {
             Defines.Error error = new Defines.Error();
+            string[] list;
             switch (method)
             {
                 case "get_departments":
-                    string[] list = this.consultationControl.GetDepartmentList(ref error);
+                    list = this.consultationControl.GetDepartmentList(ref error);
                     break;
                 case "get_doctorList":
+                    list = this.consultationControl.GetDoctorList(methodData, ref error);
                     break;
                 case "reserve_time":
+                    this.consultationControl.ReserveTime(methodData, ref error);
                     break;
                 case "create_consultation":
                     break;

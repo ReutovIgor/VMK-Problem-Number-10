@@ -9,17 +9,29 @@ namespace Defines
     #region Predefined ConsultationControl Structures
     public struct CreateConsultation
     {
-        public String date_time;
+        public DateTime date_time;
         public String department;
-        public String username;
+        public User patient;
         public User doctor;
         public String message;
     }
 
-    public struct ReserveTime
+    public struct ReservedTimeItem
     {
-        public String time;
-        public String username;
+        DateTime time;
+        string username;
+
+        public void Init(Dictionary<string, dynamic> input)
+        {
+            DateTime inputTime = input.Values.First();
+            this.time = new DateTime(   inputTime.Year,
+                                        inputTime.Month,
+                                        inputTime.Day,
+                                        inputTime.Hour,
+                                        inputTime.Minute,
+                                        inputTime.Second);
+            this.username = input.Keys.First();
+        }
     }
 
     public struct EditConsultation
