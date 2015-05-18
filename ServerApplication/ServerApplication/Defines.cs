@@ -7,15 +7,9 @@ using System.Threading.Tasks;
 namespace Defines
 {
     #region Predefined ConsultationControl Structures
-    public struct User
-    {
-        public String name;
-        public String surname;
-    }
-    
     public struct CreateConsultation
     {
-        public DateTime date_time;
+        public String date_time;
         public String department;
         public String username;
         public User doctor;
@@ -24,11 +18,11 @@ namespace Defines
 
     public struct ReserveTime
     {
-        public DateTime time;
+        public String time;
         public String username;
     }
 
-    public struct AddNote
+    public struct EditConsultation
     {
         public String username;
         public int ConsultationId;
@@ -40,22 +34,69 @@ namespace Defines
         public int status;
     }
 
-    public struct FinishConsultation
+    
+    #endregion
+
+    #region Predefined UserControl Structures
+    public struct RegisterUser
     {
-        public int consultationId;
-        public String username;
+        public User user;
+        public String dateOfBirth;
+        public String login;
+        public String password;
     }
 
+    public struct UsernameUser
+    {
+        public String username;
+        public User user;
+    }
+
+    public struct Schedule
+    {
+        public DaySchedule Monday;
+        public DaySchedule Tuesday;
+        public DaySchedule Wednesday;
+        public DaySchedule Thursday;
+        public DaySchedule Friday;
+        public DaySchedule Saturday;
+        public DaySchedule Sunday;
+    }
+
+    public struct DaySchedule
+    {
+        public String[] from;
+        public String[] to;
+
+        public DaySchedule(String[] From, String[] To)
+        {
+            this.from = From;
+            this.to = To;
+        }
+    }
+
+    public struct Vacation
+    {
+        public String username;
+        public String[] from;
+        public String[] to;
+    }
+    #endregion
+
+    #region Predefined Common Structures
+    public struct User
+    {
+        public String name;
+        public String surname;
+        public String fatherName;
+    }
+    
     public struct SendMessage
     {
         public String from;
         public User to;
         public String message;
     }
-    #endregion
-
-    #region Predefined UserControl Structures
-
     #endregion
 
     #region Errors

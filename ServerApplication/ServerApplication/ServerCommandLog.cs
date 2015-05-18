@@ -24,8 +24,8 @@ namespace ServerApplication
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string query = "SELECT * FROM Man";
-            DataSet data = DataBaseMessageComposer.SendRequest(query);
+            //string query = "SELECT * FROM Man";
+            //DataSet data = DataBaseMessageComposer.SendRequest(query, null);
         }
     }
 }

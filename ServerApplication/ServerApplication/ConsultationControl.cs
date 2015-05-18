@@ -18,8 +18,8 @@ namespace ServerApplication
         public string[] GetDepartmentList(ref Defines.Error error)
         {
             DataSet DBoutput = new DataSet();
-            string request = "GetDepartmentList";
-            DBoutput = DataBaseMessageComposer.SendRequest(request);
+            string request = "get_departments";
+            DBoutput = DataBaseMessageComposer.SendRequest(request, null);
             
             List<string> DepList = new List<string>();
             DataTable table = DBoutput.Tables[0];
