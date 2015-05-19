@@ -1,5 +1,5 @@
-get_departments: Authorized: [Patient], Handler: ConsultationControl
-get_doctorList: Authorized: [Patient], Handler: ConsultationControl
+get_subsidiary_list: Authorized: [Patient], Handler: ConsultationControl
+get_doctor_list: Authorized: [Patient], Handler: ConsultationControl
 reserve_time: Authorized: [Patient], Handler: ConsultationControl
 create_consultation: Authorized: [Patient], Handler: ConsultationControl
 add_note: Authorized: [Doctor], Handler: ConsultationControl

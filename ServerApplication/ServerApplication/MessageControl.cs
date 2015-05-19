@@ -19,7 +19,6 @@ namespace ServerApplication
         private ConsultationControl consultationControl;
         private MessageChecker messageChecker;
         private HttpRequestSender requestSender;
-        //private DataBaseMessageComposer DBComposer;
 
         public MessageControl(int port) : base(port)
         {
@@ -27,7 +26,6 @@ namespace ServerApplication
             consultationControl = new ConsultationControl();
             messageChecker = new MessageChecker();
             requestSender = new HttpRequestSender("http://127.0.0.1:8080");
-            //DBComposer = new DataBaseMessageComposer();
         }
 
         public override void handleGETRequest(HttpProcessor p)
@@ -52,27 +50,26 @@ namespace ServerApplication
             switch (messageHandler[1]["Handler"])
             {
                 case "ConsultationControl":
-                    this.ConsultationHandler(method, jsonObject["data"]);                    
+                    this.ConsultationHandler(method, jsonObject["data"], messageHandler[0]["Authorized"]);
                     break;
                 case "UserControl":
-                    this.UserHandler(method, jsonObject["data"]);
+                    this.UserHandler(method, jsonObject["data"], messageHandler[0]["Authorized"]);
                     break;
             }
         }
 
-        private void ConsultationHandler(string method, Dictionary<string, dynamic> methodData)
+        private void ConsultationHandler(string method, Dictionary<string, dynamic> methodData, string Authorized)
         {
             Defines.Error error = new Defines.Error();
-            string[] list;
             List<Defines.Message> messages;
             List<Defines.Consultation> consList;
             switch (method)
             {
-                case "get_departments":
-                    list = this.consultationControl.GetDepartmentList(ref error);
+                case "get_subsidiary_list":
+                    List<string> subsidiaryList = this.consultationControl.GetSubsidiaryList(ref error);
                     break;
-                case "get_doctorList":
-                    list = this.consultationControl.GetDoctorList(methodData, ref error);
+                case "get_doctor_list":
+                    Dictionary<string, dynamic> doctorList = this.consultationControl.GetDoctorList(methodData, ref error);
                     break;
                 case "reserve_time":
                     this.consultationControl.ReserveTime(methodData, ref error);
@@ -101,7 +98,7 @@ namespace ServerApplication
             }
         }
 
-        private void UserHandler(string method, Dictionary<string, dynamic> methodData)
+        private void UserHandler(string method, Dictionary<string, dynamic> methodData, string Authorized)
         {
             Defines.Error error = new Defines.Error();
             switch (method)
@@ -181,21 +178,6 @@ namespace ServerApplication
                     break;
             }
         }
-
-        private void ComposeResponse()
-        {
-
-        }
-
-        private void composeConsultationResponse(dynamic data, Defines.Error error)
-        {
-            
-        }
-        private void composeUserResponse(dynamic data, Defines.Error error)
-        {
-
-        }
-
     }
 
     class MessageChecker

@@ -13,7 +13,7 @@ namespace ServerApplication
 
         public void RegisterUser(Defines.RegisterUser newUser, ref Defines.Error error)
         {
-            DataSet response;
+            Dictionary<string, dynamic> response;
             Dictionary<string, dynamic> data = new Dictionary<string, dynamic>()
             {
                 {"Name", newUser.user.name},

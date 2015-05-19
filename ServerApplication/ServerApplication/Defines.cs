@@ -15,7 +15,7 @@ namespace Defines
         public User patient;
         public User doctor;
         public String message;
-        public string status;
+        public String status;
 
         public void Init(DataRow input)
         {
@@ -65,8 +65,6 @@ namespace Defines
         public String username;
         public int status;
     }
-
-    
     #endregion
 
     #region Predefined UserControl Structures
@@ -154,17 +152,20 @@ namespace Defines
             this.id = 100;
             this.text = "DataBase Error";
         }
-
         public void BadParameter_error()
         {
             this.id = 101;
             this.text = "Bad Parameters passed";
         }
-
         public void Server_error()
         {
             this.id = 102;
             this.text = "Server Error";
+        }
+        public void Time_oquipied()
+        {
+            this.id = 200;
+            this.text = "This Time is Taken";
         }
     }
     #endregion
