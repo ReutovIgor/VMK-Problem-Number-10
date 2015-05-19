@@ -45,58 +45,139 @@ namespace ServerApplication
             if(messageHandler == null)
             {
                 return;
-            }
-
-            
+            }            
 
             switch (messageHandler[1]["Handler"])
             {
                 case "ConsultationControl":
-                    this.ConsultationHandler(method);                    
+                    this.ConsultationHandler(method, jsonObject["data"], messageHandler[0]["Authorized"]);
                     break;
                 case "UserControl":
+                    this.UserHandler(method, jsonObject["data"], messageHandler[0]["Authorized"]);
                     break;
             }
         }
 
-        private void ConsultationHandler(string method)
+        private void ConsultationHandler(string method, Dictionary<string, dynamic> methodData, string Authorized)
+        {
+            Defines.Error error = new Defines.Error();
+            List<Defines.Message> messages;
+            List<Defines.Consultation> consList;
+            switch (method)
+            {
+                case "get_subsidiary_list":
+                    List<string> subsidiaryList = this.consultationControl.GetSubsidiaryList(ref error);
+                    break;
+                case "get_doctor_list":
+                    Dictionary<string, dynamic> doctorList = this.consultationControl.GetDoctorList(methodData, ref error);
+                    break;
+                case "reserve_time":
+                    this.consultationControl.ReserveTime(methodData, ref error);
+                    break;
+                case "create_consultation":
+                    this.consultationControl.CreateConsultation(methodData, ref error);
+                    break;
+                case "add_note":
+                    this.consultationControl.AddNote(methodData, ref error);
+                    break;
+                case "close_consultation":
+                    this.consultationControl.CloseConsultation(methodData, ref error);
+                    break;
+                case "cancel_consultation":
+                    this.consultationControl.CancelConsultation(methodData, ref error);
+                    break;
+                case "send_message":
+                    this.consultationControl.SendMessage(methodData, ref error);
+                    break;
+                case "get_consultations":
+                    consList = this.consultationControl.GetConsultations(methodData, ref error);
+                    break;
+                case "get_messages":
+                    messages = this.consultationControl.GetMessages(methodData, ref error);
+                    break;
+            }
+        }
+
+        private void UserHandler(string method, Dictionary<string, dynamic> methodData, string Authorized)
         {
             Defines.Error error = new Defines.Error();
             switch (method)
             {
-                case "get_departments":
-                    string[] list = this.consultationControl.GetDepartmentList(ref error);
+                case "register_user":
+                    Defines.RegisterUser newUser = new Defines.RegisterUser();
+                    newUser.user = new Defines.User();
+                    newUser.user.name = methodData["name"];
+                    newUser.user.surname = methodData["surname"];
+                    newUser.user.fatherName = methodData["father_name"];
+                    newUser.dateOfBirth = methodData["date_of_birth"];
+                    newUser.login = methodData["login"];
+                    newUser.password = methodData["password"];
+                    this.userControl.RegisterUser(newUser, ref error);
                     break;
-                case "get_doctorList":
+                case "approve_user":
+                    Defines.UsernameUser user = new Defines.UsernameUser();
+                    user.user = new Defines.User();
+                    user.username = methodData["username"];
+                    user.user.name = methodData["name"];
+                    user.user.surname = methodData["surname"];
+                    user.user.fatherName = methodData["father_name"];
+                    this.userControl.ApproveUser(user, ref error);
                     break;
-                case "reserve_time":
+                case "add_rights":
+                    Defines.UsernameUser user1 = new Defines.UsernameUser();
+                    user.user = new Defines.User();
+                    user.username = methodData["username"];
+                    user.user.name = methodData["name"];
+                    user.user.surname = methodData["surname"];
+                    user.user.fatherName = methodData["father_name"];
+                    this.userControl.AddRights(user1, ref error);
                     break;
-                case "create_consultation":
+                case "delete_user":
+                    Defines.UsernameUser user2 = new Defines.UsernameUser();
+                    user.user = new Defines.User();
+                    user.username = methodData["username"];
+                    user.user.name = methodData["name"];
+                    user.user.surname = methodData["surname"];
+                    user.user.fatherName = methodData["father_name"];
+                    this.userControl.DeleteUser(user2, ref error);
                     break;
-                case "add_note":
+                case "get_schedule":
+                    Defines.UsernameUser user3 = new Defines.UsernameUser();
+                    user.user = new Defines.User();
+                    user.username = methodData["username"];
+                    user.user.name = methodData["name"];
+                    user.user.surname = methodData["surname"];
+                    user.user.fatherName = methodData["father_name"];
+                    this.userControl.GetSchedule(user3, ref error);
                     break;
-                case "close_consultation":
+                case "change_schedule":
+                    Defines.Schedule schedule = new Defines.Schedule();
+                    schedule.Monday = new Defines.DaySchedule(methodData["Monday"]["from"], methodData["Monday"]["to"]);
+                    schedule.Tuesday = new Defines.DaySchedule(methodData["Tuesday"]["from"], methodData["Tuesday"]["to"]);
+                    schedule.Wednesday = new Defines.DaySchedule(methodData["Wednesday"]["from"], methodData["Wednesday"]["to"]);
+                    schedule.Thursday = new Defines.DaySchedule(methodData["Thursday"]["from"], methodData["Thursday"]["to"]);
+                    schedule.Friday = new Defines.DaySchedule(methodData["Friday"]["from"], methodData["Friday"]["to"]);
+                    schedule.Saturday = new Defines.DaySchedule(methodData["Saturday"]["from"], methodData["Saturday"]["to"]);
+                    schedule.Sunday = new Defines.DaySchedule(methodData["Sunday"]["from"], methodData["Sunday"]["to"]);
                     break;
-                case "cancel_consultation":
+                case "vacation_planning":
+                    Defines.Vacation vacationData = new Defines.Vacation();
+                    vacationData.username = methodData["username"];
+                    vacationData.from = methodData["from"];
+                    vacationData.to = methodData["to"];
+                    this.userControl.VacationPlanning(vacationData, ref error);
                     break;
-                case "send_message":
-                    break;
-                case "get_consultations":
-                    break;
-                case "get_messages":
+                case "approve_plan":
+                     Defines.UsernameUser user4 = new Defines.UsernameUser();
+                    user.user = new Defines.User();
+                    user.username = methodData["username"];
+                    user.user.name = methodData["name"];
+                    user.user.surname = methodData["surname"];
+                    user.user.fatherName = methodData["father_name"];
+                    this.userControl.ApprovePlan(user4, ref error);
                     break;
             }
         }
-
-        private void composeConsultationResponse(dynamic data, Defines.Error error)
-        {
-            
-        }
-        private void composeUserResponse(dynamic data, Defines.Error error)
-        {
-
-        }
-
     }
 
     class MessageChecker
@@ -136,7 +217,7 @@ namespace ServerApplication
                     new Dictionary<string, string>()
                 };
                 dictionaryDescription[0].Add("Authorized", strDescription[0].Substring(strDescription[0].IndexOf(':') + 2));
-                dictionaryDescription[1].Add("Handler", strDescription[1].Substring(strDescription[1].IndexOf(':') + 1));
+                dictionaryDescription[1].Add("Handler", strDescription[1].Substring(strDescription[1].IndexOf(':') + 2));
                 result.Add(message, dictionaryDescription);
             }
             return result;

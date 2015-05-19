@@ -12,3 +12,8 @@ D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\Se
 D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\ServerApplication.pdb
 D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.ServerCommandLog.resources
 D:\Programming\Projects\Project\ServerApplication\ServerApplication\obj\Debug\ServerApplication.csproj.GenerateResource.Cache
+C:\Users\Екатерина\Documents\VMK-Zadacha-10\ServerApplication\ServerApplication\bin\Debug\ServerApplication.exe.config
+C:\Users\Екатерина\Documents\VMK-Zadacha-10\ServerApplication\ServerApplication\obj\Debug\ServerApplication.exe
+C:\Users\Екатерина\Documents\VMK-Zadacha-10\ServerApplication\ServerApplication\obj\Debug\ServerApplication.pdb
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\SUperMedDB.mdf
+D:\Programming\Projects\Project\ServerApplication\ServerApplication\bin\Debug\SUperMedDB_log.ldf
