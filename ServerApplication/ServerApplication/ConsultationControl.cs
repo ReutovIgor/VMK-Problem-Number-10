@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace ServerApplication
 {
+    
     class ConsultationControl
     {
         List<Defines.ReservedTimeItem> reservedTimeList;
@@ -15,14 +17,12 @@ namespace ServerApplication
         {
             reservedTimeList = new List<Defines.ReservedTimeItem>();
         }
-        public List<string> GetSubsidiaryList(ref Defines.Error error)
+        public List<dynamic> GetSubsidiaryList(ref Defines.Error error)
         {
-            Dictionary<string, dynamic> DBoutput;
-            string request = "get_departments";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, null);
+            var response = DataBaseMessageComposer.SendRequest("get_departments", null);
 
-            List<string> SubsidiaryList = new List<string>();
-            foreach (var entry in DBoutput)
+            List<dynamic> SubsidiaryList = new List<dynamic>();
+            foreach (var entry in response)
                 SubsidiaryList.Add(entry.Value);
 
             if (!SubsidiaryList.Any())
@@ -36,34 +36,15 @@ namespace ServerApplication
                 return SubsidiaryList;
             }
         }
-        public Dictionary<string,dynamic> GetDoctorList(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public List<dynamic> GetSpecializationList(ref Defines.Error error)
         {
-            // checking departments existing
-            Defines.Error getDepError = new Defines.Error();
-            List<string> SubsidiaryList = this.GetSubsidiaryList(ref getDepError);
-            if (getDepError.id != 0)
-            {
-                error.DB_error();
-                return null;
-            }
+            var response = DataBaseMessageComposer.SendRequest("get_specializations", null);
 
-            if(inputData.Count > 1)
-            {
-                error.BadParameter_error();
-                return null;
-            }
+            List<dynamic> SpecializationList = new List<dynamic>();
+            foreach (var entry in response)
+                SpecializationList.Add(entry.Value);
 
-            if(SubsidiaryList.Contains(inputData["Department"]))
-            {
-                error.BadParameter_error();
-                return null;
-            }
-
-            Dictionary<string, dynamic> DBoutput;
-            string request = "get_doctors";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, null);
-
-            if (!DBoutput.Any())
+            if (!SpecializationList.Any())
             {
                 error.DB_error();
                 return null;
@@ -71,74 +52,112 @@ namespace ServerApplication
             else
             {
                 error.Success();
-                return DBoutput;
+                return SpecializationList;
             }
         }
-        public int ReserveTime(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public List<dynamic> GetDoctorList(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            // compiling request input
-            Dictionary<string, dynamic> DBoutput;
-            string request = "get_time_status";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string,dynamic>();
+            request.Add("subsidiary", inputData["department"]);
+            var response = DataBaseMessageComposer.SendRequest("get_doctors", request);
 
-            if(DBoutput.Count > 0)
+            List<dynamic> DoctorList = new List<dynamic>();
+            foreach (var entry in response)
+                DoctorList.Add(entry.Value);
+
+         
+            error.Success();
+            return DoctorList;
+          
+        }
+        public bool ReserveTime(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        {
+            string time = DateTime.Parse(inputData["time"]).ToString("yyyy-MM-dd HH:mm:ss");
+            Dictionary<string, dynamic> checkTime = new Dictionary<string, dynamic>
+            {
+                {"time", time}
+            };
+            var response = DataBaseMessageComposer.SendRequest("get_time_status", checkTime);
+
+            if(response.Count > 0)
             {
                 error.Time_oquipied();
-                return -1;
+                return false;
             }
 
+            //TODO: Change TImer!!!!
             Defines.ReservedTimeItem newTime = new Defines.ReservedTimeItem();
             newTime.Init(inputData);
             reservedTimeList.Add(newTime);
-            return 0;
+            return true;
         }       
-        public int CreateConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public bool CreateConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            Dictionary<string, dynamic> check = CheckRequest(inputData, "check_consultation_existing");
-            if (check.Count != 0)
+            if( (!inputData.ContainsKey("username") || inputData["username"] == null) ||
+                (!inputData.ContainsKey("name") || inputData["name"] == null) ||
+                (!inputData.ContainsKey("surname") || inputData["surname"] == null) ||
+                (!inputData.ContainsKey("patronymic") || inputData["patronymic"] == null) ||
+                (!inputData.ContainsKey("specialization") || inputData["specialization"] == null) ||
+                (!inputData.ContainsKey("time") || inputData["time"] == null) ||
+                (!inputData.ContainsKey("text") || inputData["text"] == null) )
             {
-                // cons does not exist
                 error.BadParameter_error();
-                return -1;
+                return false;
             }
+            string code = GetRandomString();
+            code += GetRandomString();
+            string time = DateTime.Parse(inputData["time"]).ToString("yyyy-MM-dd HH:mm:ss");
 
-            // compiling request input
-            Dictionary<string, dynamic> DBoutput;
-            string request = "create_consultation";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            //fill data for request
+            Dictionary<string, dynamic> request = new Dictionary<string,dynamic>();
+            request.Add("username", inputData["username"]);
+            request.Add("name", inputData["name"]);
+            request.Add("surname", inputData["surname"]);
+            request.Add("patronymic", inputData["patronymic"]);
+            request.Add("specialization", inputData["specialization"]);
+            request.Add("time", time);
+            request.Add("code", code);
+            request.Add("status", "Created");
+            request.Add("text", inputData["text"]);
+
+            var response = DataBaseMessageComposer.SendRequest("create_consultation", request);
 
 
-            if (DBoutput.Count != 1)
+            if (response.ContainsValue("CONSULTATION EXISTS"))
             {
-                error.DB_error();
-                return -1;
+                error.Time_oquipied();
+                return false;
             }
             else
             {
                 if (FreeTime(inputData))
                 {
                     error.Server_error();
-                    return -1;
+                    return false;
                 }
                 error.Success();
-                return 0;
+                return true;
             }
 
         }
-        public List<Defines.Consultation> GetConsultations(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public List<dynamic> GetConsultations(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            // compiling request input
-            Dictionary<string, dynamic> DBoutput;
-            string request = "get_consultations";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string,dynamic>();
+            request.Add("status", inputData["status"]);
+            request.Add("username", inputData["username"]);
+
+            var response = DataBaseMessageComposer.SendRequest("get_consultations", request);
 
             // parsing request output
-            List<Defines.Consultation> ConsList = new List<Defines.Consultation>();
-            foreach (var row in DBoutput)
+            List<dynamic> ConsList = new List<dynamic>();
+            foreach (var row in response)
             {
-                Defines.Consultation current = new Defines.Consultation();
-                //current.Init(row);
-                ConsList.Add(current);
+                if(row.Key == "StartTime")
+                {
+                    //row.Value = DateTime.Parse(row.Value).ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+                ConsList.Add(row);
             }
 
             if (!ConsList.Any())
@@ -152,128 +171,98 @@ namespace ServerApplication
                 return ConsList;
             }
         }
-        public int AddNote(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public bool AddNote(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            Dictionary<string, dynamic> DBoutput;
-            string request = "add_note";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string,dynamic>();
+            request.Add("username", inputData["username"]);
+            request.Add("consultationId", inputData["consultationId"]);
+            request.Add("text", inputData["text"]);
+            var response = DataBaseMessageComposer.SendRequest("add_note", request);
 
-            if (DBoutput.Count != 1)
+            if (!response.ContainsValue("Note Added"))
             {
                 error.DB_error();
-                return -1;
+                return false;
             }
             else
             {
                 error.Success();
-                return 0;
+                return true;
             }
         }
-        public int CloseConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public bool CloseConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            Dictionary<string, dynamic> check = CheckRequest(inputData, "check_consultation_existing");
-            if (check.Count != 1)
-            {
-                // cons does not exist
-                error.BadParameter_error();
-                return -1;
-            }
-
-            if (inputData["Username"] != check["Id_Doctor"])
-            {
-                // you have no permissions
-                error.BadParameter_error();
-                return -1;
-            }
-
-            // compiling request input
-            Dictionary<string, dynamic> DBoutput;
-            string request = "close_consultation";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string,dynamic>();
+            request.Add("username", inputData["username"]);
+            request.Add("time", inputData["time"]);
+            request.Add("consultationId", inputData["consultationId"]);
+            request.Add("status", "Closed");
+            var response = DataBaseMessageComposer.SendRequest("close_consultation", request);
 
             // parsing request output
-            if (DBoutput.Count != 1)
+            if (response.ContainsValue("Permission Denied"))
             {
-                error.DB_error();
-                return -1;
+                error.No_Permission();
+                return false;
             }
             else
             {
                 error.Success();
-                return 0;
+                return true;
             }
         }
-        public int CancelConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public bool CancelConsultation(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            Dictionary<string, dynamic> check = CheckRequest(inputData, "check_consultation_existing");
-            if (check.Count  != 1)
-            {
-                // cons does not exist
-                error.BadParameter_error();
-                return -1;
-            }
-
-            if (inputData["Username"] != check["Id_Patient"])
-            {
-                // you have no permissions
-                error.BadParameter_error();
-                return -1;
-            }
-
-            // compiling request input
-            Dictionary<string, dynamic> DBoutput;
-            string request = "cancel_consultation";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string, dynamic>();
+            request.Add("username", inputData["username"]);
+            request.Add("consultationId", inputData["consultationId"]);
+            request.Add("status", "Closed");
+            var response = DataBaseMessageComposer.SendRequest("close_consultation", request);
 
             // parsing request output
-            if (DBoutput.Count != 1)
+            if (response.ContainsValue("Permission Denied"))
             {
-                error.DB_error();
-                return -1;
+                error.No_Permission();
+                return false;
             }
             else
             {
                 error.Success();
-                return 0;
+                return true;
             }
         }
-        public int SendMessage(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public bool SendMessage(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            Dictionary<string, dynamic> DBoutput;
-            string request = "send_message";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string, dynamic>();
+            request.Add("username", inputData["username"]);
+            var response = DataBaseMessageComposer.SendRequest("send_message", request);
 
             // parsing request output
-            if (DBoutput.Count == 0)
+            if (response.Count == 0)
             {
                 error.DB_error();
-                return -1;
+                return false;
             }
             else
             {
                 error.Success();
-                return 0;
+                return true;
             }
         }
-        public List<Defines.Message> GetMessages(Dictionary<string, dynamic> inputData, ref Defines.Error error)
+        public List<dynamic> GetMessages(Dictionary<string, dynamic> inputData, ref Defines.Error error)
         {
-            Dictionary<string, dynamic> DBoutput;
-            string request = "get_messages";
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
+            Dictionary<string, dynamic> request = new Dictionary<string, dynamic>();
+            request.Add("username", inputData["username"]);
+            request.Add("type", inputData["type"]);
+            var response = DataBaseMessageComposer.SendRequest("get_messages", request);
 
-            // parsing request output
-            List<Defines.Message> messagesList = new List<Defines.Message>();
-            foreach (var row in DBoutput)
+            List<dynamic> messagesList = new List<dynamic>();
+            foreach (var row in response)
             {
-                Defines.Message current = new Defines.Message(
-                                                               (string)row.Value["from"],
-                                                               (Defines.User)row.Value["to"],
-                                                               (string)row.Value["message"]
-                                                             );
-                messagesList.Add(current);
+                messagesList.Add(row);
             }
 
-            if (DBoutput.Count == 0)
+            if (response.Count == 0)
             {
                 error.DB_error();
                 return null;
@@ -285,12 +274,11 @@ namespace ServerApplication
             }
         }
 
-
-        private Dictionary<string, dynamic> CheckRequest(Dictionary<string, dynamic> inputData, string request)
+        private static string GetRandomString()
         {
-            Dictionary<string, dynamic> DBoutput;
-            DBoutput = DataBaseMessageComposer.SendRequest(request, inputData);
-            return DBoutput;
+            string path = Path.GetRandomFileName();
+            path = path.Replace(".", ""); // Remove period.
+            return path;
         }
         private bool FreeTime(Dictionary<string, dynamic> inputData)
         {

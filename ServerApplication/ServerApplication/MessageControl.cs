@@ -18,14 +18,14 @@ namespace ServerApplication
         private UserControl userControl;
         private ConsultationControl consultationControl;
         private MessageChecker messageChecker;
-        private HttpRequestSender requestSender;
+        //private HttpRequestSender requestSender;
 
         public MessageControl(int port) : base(port)
         {
             userControl = new UserControl();
             consultationControl = new ConsultationControl();
             messageChecker = new MessageChecker();
-            requestSender = new HttpRequestSender("http://127.0.0.1:8080");
+            //requestSender = new HttpRequestSender("http://127.0.0.1:8080");
         }
 
         public override void handleGETRequest(HttpProcessor p)
@@ -44,139 +44,209 @@ namespace ServerApplication
 
             if(messageHandler == null)
             {
+                //send error response!!!!
                 return;
-            }            
+            }
+            
+            //add authorization check!
+            string str = messageHandler[0]["Authorized"];
+            str = str.Replace("[", "");
+            str = str.Replace("]", "");
+            str = str.Trim();
+            string[] authorized = str.Split(',');
+
+            if(authorized.Length > 0)
+            {
+                Dictionary<string, dynamic> Data = new Dictionary<string, dynamic>();
+                Data.Add("username", jsonObject["data"]["username"]);
+                Data.Add("table", "");
+                for(int i = 0; i < authorized.Length; i++)
+                {
+                    if (authorized[0].Length == 0)
+                        continue;
+                    authorized[i] = authorized[i].Trim();
+                    Data["table"] = authorized[i];
+                    var response = DataBaseMessageComposer.SendRequest("check_authorization", Data);
+                    
+                    if (response.Count > 0)
+                        break;
+                    else if(i == (authorized.Length - 1))
+                    {
+                        Defines.Error error = new Defines.Error();
+                        Dictionary<string, dynamic> result = new Dictionary<string, dynamic>();
+                        result.Add("Data", "");
+                        result.Add("Error", error);
+                        error.No_Permission();
+                        this.ComposeResponse(result, p);
+                        return;
+                    }
+
+                }
+            }
 
             switch (messageHandler[1]["Handler"])
             {
                 case "ConsultationControl":
-                    this.ConsultationHandler(method, jsonObject["data"], messageHandler[0]["Authorized"]);
+                    this.ConsultationHandler(p, method, jsonObject["data"], messageHandler[0]["Authorized"]);
                     break;
                 case "UserControl":
-                    this.UserHandler(method, jsonObject["data"], messageHandler[0]["Authorized"]);
+                    this.UserHandler(p, method, jsonObject["data"], messageHandler[0]["Authorized"]);
                     break;
             }
         }
 
-        private void ConsultationHandler(string method, Dictionary<string, dynamic> methodData, string Authorized)
+        private void ComposeResponse(Dictionary<string,dynamic> data, HttpProcessor p)
         {
+            string json = (new JavaScriptSerializer()).Serialize(data);
+            p.writeSuccess("text/html", json);
+        }
+
+        private void ConsultationHandler(HttpProcessor p, string method, Dictionary<string, dynamic> methodData, string Authorized)
+        {
+            Dictionary<string, dynamic> result = new Dictionary<string, dynamic>();
             Defines.Error error = new Defines.Error();
-            List<Defines.Message> messages;
-            List<Defines.Consultation> consList;
+            dynamic handlerResponse;
             switch (method)
             {
                 case "get_subsidiary_list":
-                    List<string> subsidiaryList = this.consultationControl.GetSubsidiaryList(ref error);
+                    result.Add("Data", this.consultationControl.GetSubsidiaryList(ref error));
+                    break;
+                case "get_specializations":
+                    result.Add("Data", this.consultationControl.GetSpecializationList(ref error));
                     break;
                 case "get_doctor_list":
-                    Dictionary<string, dynamic> doctorList = this.consultationControl.GetDoctorList(methodData, ref error);
+                    result.Add("Data", this.consultationControl.GetDoctorList(methodData, ref error));
                     break;
                 case "reserve_time":
-                    this.consultationControl.ReserveTime(methodData, ref error);
+                    handlerResponse = this.consultationControl.ReserveTime(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "create_consultation":
-                    this.consultationControl.CreateConsultation(methodData, ref error);
+                    handlerResponse = this.consultationControl.CreateConsultation(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "add_note":
-                    this.consultationControl.AddNote(methodData, ref error);
+                    handlerResponse = this.consultationControl.AddNote(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "close_consultation":
-                    this.consultationControl.CloseConsultation(methodData, ref error);
+                    handlerResponse = this.consultationControl.CloseConsultation(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "cancel_consultation":
-                    this.consultationControl.CancelConsultation(methodData, ref error);
+                    handlerResponse = this.consultationControl.CancelConsultation(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "send_message":
-                    this.consultationControl.SendMessage(methodData, ref error);
+                    handlerResponse = this.consultationControl.SendMessage(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "get_consultations":
-                    consList = this.consultationControl.GetConsultations(methodData, ref error);
+                    result.Add("Data", this.consultationControl.GetConsultations(methodData, ref error));
                     break;
                 case "get_messages":
-                    messages = this.consultationControl.GetMessages(methodData, ref error);
+                    result.Add("Data", this.consultationControl.GetMessages(methodData, ref error));
                     break;
             }
+            result.Add("Error", error);
+            this.ComposeResponse(result, p);
         }
 
-        private void UserHandler(string method, Dictionary<string, dynamic> methodData, string Authorized)
+        private void UserHandler(HttpProcessor p, string method, Dictionary<string, dynamic> methodData, string Authorized)
         {
             Defines.Error error = new Defines.Error();
+            Dictionary<string, dynamic> result = new Dictionary<string, dynamic>();
+            dynamic handlerResponse;
             switch (method)
             {
+                case "get_pendings":
+                    result.Add("Data", this.userControl.GetPendings(ref error));
+                    break;
+                case "login":
+                    result.Add("Data", this.userControl.Login(methodData, ref error));
+                    break;
                 case "register_user":
-                    Defines.RegisterUser newUser = new Defines.RegisterUser();
-                    newUser.user = new Defines.User();
-                    newUser.user.name = methodData["name"];
-                    newUser.user.surname = methodData["surname"];
-                    newUser.user.fatherName = methodData["father_name"];
-                    newUser.dateOfBirth = methodData["date_of_birth"];
-                    newUser.login = methodData["login"];
-                    newUser.password = methodData["password"];
-                    this.userControl.RegisterUser(newUser, ref error);
+                    handlerResponse = this.userControl.RegisterUser(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "approve_user":
-                    Defines.UsernameUser user = new Defines.UsernameUser();
-                    user.user = new Defines.User();
-                    user.username = methodData["username"];
-                    user.user.name = methodData["name"];
-                    user.user.surname = methodData["surname"];
-                    user.user.fatherName = methodData["father_name"];
-                    this.userControl.ApproveUser(user, ref error);
+                    handlerResponse = this.userControl.ApproveUser(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
+                    break;
+                case "get_users":
+                    result.Add("Data", this.userControl.GetUsers(ref error));
                     break;
                 case "add_rights":
-                    Defines.UsernameUser user1 = new Defines.UsernameUser();
-                    user.user = new Defines.User();
-                    user.username = methodData["username"];
-                    user.user.name = methodData["name"];
-                    user.user.surname = methodData["surname"];
-                    user.user.fatherName = methodData["father_name"];
-                    this.userControl.AddRights(user1, ref error);
-                    break;
-                case "delete_user":
-                    Defines.UsernameUser user2 = new Defines.UsernameUser();
-                    user.user = new Defines.User();
-                    user.username = methodData["username"];
-                    user.user.name = methodData["name"];
-                    user.user.surname = methodData["surname"];
-                    user.user.fatherName = methodData["father_name"];
-                    this.userControl.DeleteUser(user2, ref error);
+                    handlerResponse = this.userControl.AddRights(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "get_schedule":
-                    Defines.UsernameUser user3 = new Defines.UsernameUser();
-                    user.user = new Defines.User();
-                    user.username = methodData["username"];
-                    user.user.name = methodData["name"];
-                    user.user.surname = methodData["surname"];
-                    user.user.fatherName = methodData["father_name"];
-                    this.userControl.GetSchedule(user3, ref error);
+                    result.Add("Data", this.userControl.GetSchedule(methodData, ref error));
                     break;
                 case "change_schedule":
-                    Defines.Schedule schedule = new Defines.Schedule();
-                    schedule.Monday = new Defines.DaySchedule(methodData["Monday"]["from"], methodData["Monday"]["to"]);
-                    schedule.Tuesday = new Defines.DaySchedule(methodData["Tuesday"]["from"], methodData["Tuesday"]["to"]);
-                    schedule.Wednesday = new Defines.DaySchedule(methodData["Wednesday"]["from"], methodData["Wednesday"]["to"]);
-                    schedule.Thursday = new Defines.DaySchedule(methodData["Thursday"]["from"], methodData["Thursday"]["to"]);
-                    schedule.Friday = new Defines.DaySchedule(methodData["Friday"]["from"], methodData["Friday"]["to"]);
-                    schedule.Saturday = new Defines.DaySchedule(methodData["Saturday"]["from"], methodData["Saturday"]["to"]);
-                    schedule.Sunday = new Defines.DaySchedule(methodData["Sunday"]["from"], methodData["Sunday"]["to"]);
+                    handlerResponse = this.userControl.ChangeSchedule(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
                 case "vacation_planning":
-                    Defines.Vacation vacationData = new Defines.Vacation();
-                    vacationData.username = methodData["username"];
-                    vacationData.from = methodData["from"];
-                    vacationData.to = methodData["to"];
-                    this.userControl.VacationPlanning(vacationData, ref error);
+                    handlerResponse = this.userControl.VacationPlanning(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
-                case "approve_plan":
-                     Defines.UsernameUser user4 = new Defines.UsernameUser();
-                    user.user = new Defines.User();
-                    user.username = methodData["username"];
-                    user.user.name = methodData["name"];
-                    user.user.surname = methodData["surname"];
-                    user.user.fatherName = methodData["father_name"];
-                    this.userControl.ApprovePlan(user4, ref error);
+                case "approve_reject_plan":
+                    handlerResponse = this.userControl.Approve_RejectPlan(methodData, ref error);
+                    result.Add("Data","");
+                    if(handlerResponse)
+                        result["Data"].Add("Status:", "Success");
+                    else
+                        result["Data"].Add("Status:", "Failed");
                     break;
             }
+            
+            result.Add("Error", error);
+            this.ComposeResponse(result, p);
         }
     }
 
@@ -204,7 +274,7 @@ namespace ServerApplication
                 }
             }
 
-            string[] stringSpliter = { "," };
+            string[] stringSpliter = { ";" };
 
             foreach(string el in list)
             {
@@ -239,7 +309,7 @@ namespace ServerApplication
     class HttpRequestSender
     {
         string url;
-        HttpClient client;
+        public HttpClient client;
 
         public HttpRequestSender(string url) 
         {
@@ -252,11 +322,8 @@ namespace ServerApplication
         {
             Console.WriteLine("Client:: Sending data to url: " + this.url);
             var content = new FormUrlEncodedContent(data);
-
-            //var response = 
+ 
             client.PostAsync(this.url, content);
-
-            //var responseString = response.Content.ReadAsStringAsync();
             
             return "";
         }
@@ -475,16 +542,20 @@ namespace ServerApplication
 
         }
 
-        public void writeSuccess(string content_type = "text/html")
+        public void writeSuccess(string content_type = "text/html", string json = " ")
         {
             // this is the successful HTTP response line
-            outputStream.WriteLine("HTTP/1.0 200 OK");
+            outputStream.WriteLine("HTTP/1.1 200 OK");
+            string origin = this.httpHeaders["Origin"].ToString();
+            outputStream.WriteLine("Access-Control-Allow-Origin:" + origin);
             // these are the HTTP headers...          
             outputStream.WriteLine("Content-Type: " + content_type);
+            outputStream.WriteLine("response:" + json);
             outputStream.WriteLine("Connection: close");
             // ..add your own headers here if you like
 
             outputStream.WriteLine(""); // this terminates the HTTP headers.. everything after this is HTTP body..
+            outputStream.WriteLine(json);
         }
 
         public void writeFailure()

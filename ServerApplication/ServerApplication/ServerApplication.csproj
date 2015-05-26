@@ -89,11 +89,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SUperMedDBDataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="SUperMedDBDataSet1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SUperMedDBDataSet1.xsd</DependentUpon>
-    </Compile>
     <Compile Include="UserControl.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -112,17 +107,6 @@
     </None>
     <None Include="SUperMedDBDataSet.xss">
       <DependentUpon>SUperMedDBDataSet.xsd</DependentUpon>
-    </None>
-    <None Include="SUperMedDBDataSet1.xsc">
-      <DependentUpon>SUperMedDBDataSet1.xsd</DependentUpon>
-    </None>
-    <None Include="SUperMedDBDataSet1.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>SUperMedDBDataSet1.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="SUperMedDBDataSet1.xss">
-      <DependentUpon>SUperMedDBDataSet1.xsd</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>

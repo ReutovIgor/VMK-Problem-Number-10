@@ -7,35 +7,6 @@ using System.Threading.Tasks;
 
 namespace Defines
 {
-    #region Predefined ConsultationControl Structures
-    public struct Consultation
-    {
-        public DateTime date_time;
-        public String department;
-        public User patient;
-        public User doctor;
-        public String message;
-        public String status;
-
-        public void Init(DataRow input)
-        {
-            DateTime temp = new DateTime(
-                                        (int)input["year"],
-                                        (int)input["month"],
-                                        (int)input["day"],
-                                        (int)input["hour"],
-                                        (int)input["minute"],
-                                        (int)input["second"]
-                                        );
-                                                        
-            this.department     = input["department"].ToString();
-            this.patient.name   = input["patient"].ToString();
-            this.doctor.name    = input["doctor"].ToString();
-            this.message        = input["message"].ToString();
-            this.status         = input["status"].ToString();
-        }
-    }
-
     public struct ReservedTimeItem
     {
         public DateTime time;
@@ -53,88 +24,6 @@ namespace Defines
             this.username = input.Keys.First();
         }
     }
-
-    public struct EditConsultation
-    {
-        public String username;
-        public int ConsultationId;
-    }
-
-    public struct GetConsultations
-    {
-        public String username;
-        public int status;
-    }
-    #endregion
-
-    #region Predefined UserControl Structures
-    public struct RegisterUser
-    {
-        public User user;
-        public String dateOfBirth;
-        public String login;
-        public String password;
-    }
-
-    public struct UsernameUser
-    {
-        public String username;
-        public User user;
-    }
-
-    public struct Schedule
-    {
-        public DaySchedule Monday;
-        public DaySchedule Tuesday;
-        public DaySchedule Wednesday;
-        public DaySchedule Thursday;
-        public DaySchedule Friday;
-        public DaySchedule Saturday;
-        public DaySchedule Sunday;
-    }
-
-    public struct DaySchedule
-    {
-        public String[] from;
-        public String[] to;
-
-        public DaySchedule(String[] From, String[] To)
-        {
-            this.from = From;
-            this.to = To;
-        }
-    }
-
-    public struct Vacation
-    {
-        public String username;
-        public String[] from;
-        public String[] to;
-    }
-    #endregion
-
-    #region Predefined Common Structures
-    public struct User
-    {
-        public String name;
-        public String surname;
-        public String fatherName;
-    }
-    
-    public struct Message
-    {
-        public String from;
-        public User to;
-        public String message;
-
-        public Message(string from, User to, string message)
-        {
-            this.from = from;
-            this.to = to;
-            this.message = message;
-        }
-    }
-    #endregion
 
     #region Errors
     public struct Error
@@ -162,10 +51,26 @@ namespace Defines
             this.id = 102;
             this.text = "Server Error";
         }
+        public void No_Permission()
+        {
+            this.id = 103;
+            this.text = "No Permission!";
+        }
+        public void Method_Not_Supported()
+        {
+            this.id = 104;
+            this.text = "Method not supported";
+        }
         public void Time_oquipied()
         {
             this.id = 200;
             this.text = "This Time is Taken";
+        }
+        public void Incorrect_Username_Password()
+        {
+            this.id = 300;
+            this.text = "Username or Password are incorrect";
+
         }
     }
     #endregion
